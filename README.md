@@ -1,17 +1,49 @@
-# node_red_app
+# IoT ESP32 + Application Flutter
 
-A new Flutter project.
+Ce projet permet de :
+- Lire des capteurs connectés à un ESP32 : **DHT11 (température/humidité)**, **LDR (luminosité)**, **HC-SR04 (distance)**.
+- Contrôler des actionneurs : **LED** et **Servo moteur** via MQTT.
+- Visualiser les données en temps réel et contrôler les actionneurs depuis une **application mobile Flutter**.
 
-## Getting Started
+---
 
-This project is a starting point for a Flutter application.
+## 🔧 Dépôt ESP32
+Le code ESP32 et les dépendances Arduino/Wokwi sont disponibles ici :
+[https://github.com/joachimbang/iot_arduino_code.git](https://github.com/joachimbang/iot_arduino_code.git)
 
-A few resources to get you started if this is your first Flutter project:
+---
 
-- [Lab: Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://docs.flutter.dev/cookbook)
+## 📱 Application mobile Flutter
+L’application permet :
+- Affichage en temps réel des capteurs.
+- Contrôle des actionneurs (LED et servo).
 
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
-# iot-app
+Lien GitHub : [https://github.com/joachimbang/iot-app.git](https://github.com/joachimbang/iot-app.git)
+
+---
+
+## 📥 Télécharger uniquement l’APK
+Pour Android, vous pouvez télécharger directement l’APK pré-généré :
+- Dans le dépôt, dossier `application_build/app-release.apk`.
+- Ou via la section **Releases** GitHub pour la dernière version stable.
+
+---
+
+## ⚡ Prérequis pour l’APK Android
+- Android 7.0+
+- Connexion Wi-Fi (même réseau que l’ESP32)
+- Autoriser l’installation depuis des sources inconnues
+
+---
+
+## 📖 Instructions rapides
+1. Installer l’APK sur votre smartphone.
+2. Ouvrir l’application.
+3. Visualiser les données des capteurs en temps réel.
+4. Contrôler LED et servo à distance via l’application.
+
+---
+
+## 🔗 Liens utiles
+- MQTT broker utilisé : [HiveMQ public broker](https://www.hivemq.com/public-mqtt-broker/)
+- Documentation des capteurs : DHT11, HC-SR04, LDR

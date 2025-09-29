@@ -1,33 +1,55 @@
+// lib/views/bottom_navbar.dart
 import 'package:flutter/material.dart';
-import 'package:node_red_app/services/style.dart';
-import 'package:node_red_app/utils/extension.dart';
+import 'package:node_red_app/utils/chart_data.dart';
 import 'package:node_red_app/views/Graphic.dart';
-import 'package:node_red_app/views/home.dart';
-// import 'main.dart'; // Pour ChartData si nécessaire
+import 'home.dart';
 
 class BottomNavbar extends StatefulWidget {
-  final Map<String, List<ChartData>> chartData;
+  final Map<String, List<ChartData>> initialChartData;
 
-  const BottomNavbar({Key? key, required this.chartData}) : super(key: key);
-  static String routename = "/admin_home";
+  const BottomNavbar({super.key, required this.initialChartData, required Map<String, List> chartData});
 
   @override
   State<BottomNavbar> createState() => _BottomNavbarState();
 }
 
-class _BottomNavbarState extends State<BottomNavbar>
-    with SingleTickerProviderStateMixin {
-  int _selectedIndex = 0;
+class _BottomNavbarState extends State<BottomNavbar> with SingleTickerProviderStateMixin {
   late TabController controller;
+  int _selectedIndex = 0;
+
+  // Le ValueNotifier partagé entre Home et GraphPage
+  late ValueNotifier<Map<String, List<ChartData>>> chartNotifier;
 
   @override
   void initState() {
-    controller = TabController(
-      initialIndex: 0,
-      length: 2,
-      vsync: this,
-    );
     super.initState();
+    chartNotifier = ValueNotifier({
+      "temperature": List.from(widget.initialChartData["temperature"] ?? []),
+      "humidity": List.from(widget.initialChartData["humidity"] ?? []),
+      "luminosity": List.from(widget.initialChartData["luminosity"] ?? []),
+      "distance": List.from(widget.initialChartData["distance"] ?? []),
+    });
+
+    controller = TabController(length: 2, vsync: this, initialIndex: _selectedIndex);
+  }
+
+  @override
+  void dispose() {
+    controller.dispose();
+    chartNotifier.dispose();
+    super.dispose();
+  }
+
+  // Cette fonction sera appelée depuis Home pour mettre à jour le graphique
+  void _onHomeChartDataUpdated(Map<String, List<ChartData>> newData) {
+    if (!mounted) return;
+    // Mise à jour sécurisée du ValueNotifier
+    chartNotifier.value = {
+      "temperature": List.from(newData["temperature"] ?? []),
+      "humidity": List.from(newData["humidity"] ?? []),
+      "luminosity": List.from(newData["luminosity"] ?? []),
+      "distance": List.from(newData["distance"] ?? []),
+    };
   }
 
   @override
@@ -38,49 +60,32 @@ class _BottomNavbarState extends State<BottomNavbar>
           children: [
             Expanded(
               child: TabBarView(
-                physics: const NeverScrollableScrollPhysics(),
                 controller: controller,
+                physics: const NeverScrollableScrollPhysics(),
                 children: [
-                  Home(
-                    onChartDataUpdated: (newData) {
-                      setState(() {
-                        widget.chartData.addAll(newData);
-                      });
-                    },
-                  ),
-                  GraphPage(chartData: widget.chartData),
+                  // Home reçoit la callback pour mettre à jour le notifier
+                  Home(onChartDataUpdated: _onHomeChartDataUpdated),
+                  // GraphPage reçoit le notifier pour les updates en live
+                  GraphPage(chartNotifier: chartNotifier, chartData: {},),
                 ],
               ),
             ),
             Row(
               children: [
-                _buildNavItem(
-                  icon: Icons.home,
-                  label: "Home",
-                  index: 0,
-                ),
-                _buildNavItem(
-                  icon: Icons.graphic_eq,
-                  label: "Graph",
-                  index: 1,
-                ),
+                _buildNavItem(icon: Icons.home, label: 'Home', index: 0),
+                _buildNavItem(icon: Icons.show_chart, label: 'Graph', index: 1),
               ],
-            ),
+            )
           ],
         ),
       ),
     );
   }
 
-  Widget _buildNavItem({
-    required IconData icon,
-    required String label,
-    required int index,
-  }) {
-    final bool isSelected = _selectedIndex == index;
-
+  Widget _buildNavItem({required IconData icon, required String label, required int index}) {
+    final selected = _selectedIndex == index;
     return Expanded(
-      child: GestureDetector(
+      child: InkWell(
         onTap: () {
           setState(() {
             _selectedIndex = index;
@@ -89,22 +94,17 @@ class _BottomNavbarState extends State<BottomNavbar>
         },
         child: Container(
           padding: const EdgeInsets.symmetric(vertical: 10),
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(5),
-          ),
+          color: selected ? Colors.green.withOpacity(0.06) : Colors.transparent,
           child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
+            mainAxisSize: MainAxisSize.min,
             children: [
-              Icon(
-                icon,
-                color: isSelected ? AppStyle.PRIMERYCOLOR : Colors.grey,
-              ),
-              AppStyle.SPACING_XS.heightBox,
+              Icon(icon, color: selected ? Colors.green : Colors.grey),
+              const SizedBox(height: 4),
               Text(
                 label,
                 style: TextStyle(
+                  color: selected ? Colors.green : Colors.grey,
                   fontWeight: FontWeight.w600,
-                  color: isSelected ? AppStyle.PRIMERYCOLOR : Colors.grey,
                 ),
               ),
             ],
